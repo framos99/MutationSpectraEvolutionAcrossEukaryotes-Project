@@ -46,7 +46,7 @@ def split_fasta_and_run_repeatmasker(input_fasta, NCBI_TAXONOMY, working_directo
     #list of sequence IDs already processed
     Already_processed_sequences = RMSK_do_not_run_list(working_directory, RMSK_output_directory)
     # RepeatMasker command
-    repeatmasker_command = "bsub -m avenger RepeatMasker -species {NCBI_TAXONOMY} -e hmmer -libdir /misc/appl/RepeatMasker-4.1.5/Libraries/ -hmmer_dir /misc/appl/hmmer-3.1b2/bin/ {individual_sequence_fasta}"
+    repeatmasker_command = "bsub RepeatMasker -species {NCBI_TAXONOMY} -e hmmer -libdir /misc/appl/RepeatMasker-4.1.5/Libraries/ -hmmer_dir /misc/appl/hmmer-3.1b2/bin/ {individual_sequence_fasta}"
     # File paths
     input_fasta_path = os.path.join(working_directory, f"Assembly/{input_fasta}")
     # Create the output directory if it doesn't exist
