@@ -91,15 +91,15 @@ def split_fasta_and_run_repeatmasker(input_fasta, NCBI_TAXONOMY, working_directo
                     
 def RMSK_do_not_run_list(working_directory, RMSK_output_directory):
     sequence_records_file = os.path.join(working_directory, f"Assembly/assembly_sequenceIDs.txt")
-    with open(sequence_records_file, 'r') as file:
-        records_list = [line.strip() for line in file.readlines()]
     Already_processed_sequences = []
-
-    for RECORD in records_list:
-        output_directory = os.path.join(working_directory, f"Assembly/{RMSK_output_directory}")
-        RMSK_out_file_path = os.path.join(output_directory, f"{RECORD}.fasta.out")
-        if os.path.exists(RMSK_out_file_path):
-            Already_processed_sequences.append(RECORD)
+    if os.path.isfile(sequence_records_file):
+        with open(sequence_records_file, 'r') as file:
+            records_list = [line.strip() for line in file.readlines()]
+        for RECORD in records_list:
+            output_directory = os.path.join(working_directory, f"Assembly/{RMSK_output_directory}")
+            RMSK_out_file_path = os.path.join(output_directory, f"{RECORD}.fasta.out")
+            if os.path.exists(RMSK_out_file_path):
+                Already_processed_sequences.append(RECORD)
     return Already_processed_sequences
 
 if __name__ == "__main__":
