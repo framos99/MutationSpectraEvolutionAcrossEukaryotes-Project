@@ -19,7 +19,9 @@ ARGUMENTS
     -W => <string> Path to working directory REQUIRED
     --ploidy => <string> Sample ploidy; options are haploid or diploid (default: diploid)
 ASSUMPTIONS
-    * multiple (will expand on this later)
+    * VCF file is bgzipped
+    * working directory has the same name as the given species name (-P)
+    * 5 subdirectories are found in the working directory: Assembly, VCFs, Regions_To_Remove, Baymer_Out, Files_for_Baymer)
 """)
     sys.exit(error_num)
 #check if necessary file exists to avoid unnecessary processing
