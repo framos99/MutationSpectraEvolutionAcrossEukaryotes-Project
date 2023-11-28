@@ -218,8 +218,6 @@ def main(argv):
         #run bedtools getfasta
         making_nongenic_fasta_command = ("bedtools getfasta -fi {uncompressed_assembly_file} -bed {non_genic_bedfile} -fo {non_genic_fasta}").format(uncompressed_assembly_file=uncompressed_assembly_file, non_genic_bedfile=non_genic_bedfile, non_genic_fasta=non_genic_fasta)
         subprocess.run(making_nongenic_fasta_command, shell=True, check=True)
-        #remove uncompressed assembly
-        os.remove(uncompressed_assembly_file)
 
     # Check non-genic fasta index
     non_genic_fasta_index = os.path.join(working_directory, f"Files_for_Baymer/{PREFIX}_nonGenic.fa.fai")
@@ -231,9 +229,13 @@ def main(argv):
     non_genic_vcf = os.path.join(working_directory, f"Files_for_Baymer/non.genic_{VCF}")
     vcf_file = os.path.join(working_directory, f"VCFs/{VCF}")
     if not os.path.isfile(non_genic_vcf):
-        generating_nongenic_vcf_command = ("bcftools view -O z -R {non_genic_bedfile} -v snps {vcf_file} | bcftools annotate -O z -x FORMAT,^INFO/AC,^INFO/AF,^INFO/AN - | bcftools norm -O z --multiallelics - --fasta-ref {assembly_file} - | bcftools view -O z -o {non_genic_vcf} -e 'ALT[0]==\"*\" || ALT[0]==\".\"' -").format(non_genic_bedfile=non_genic_bedfile, vcf_file=vcf_file, assembly_file=assembly_file, non_genic_vcf=non_genic_vcf)
+        generating_nongenic_vcf_command = ("bcftools view -O z -R {non_genic_bedfile} -v snps {vcf_file} | bcftools annotate -O z -x FORMAT,^INFO/AC,^INFO/AF,^INFO/AN - | bcftools norm -O z --multiallelics - --fasta-ref {uncompressed_assembly_file} - | bcftools view -O z -o {non_genic_vcf} -e 'ALT[0]==\"*\" || ALT[0]==\".\"' -").format(non_genic_bedfile=non_genic_bedfile, vcf_file=vcf_file, uncompressed_assembly_file=uncompressed_assembly_file, non_genic_vcf=non_genic_vcf)
         subprocess.run(generating_nongenic_vcf_command, shell=True, check=True)
         check_and_update_ac_an_tags(non_genic_vcf, non_genic_vcf, PLOIDY)
+
+    if os.path.isfile(uncompressed_assembly_file):
+    #remove uncompressed assembly
+        os.remove(uncompressed_assembly_file)
 
     # Make baymer config files
     baymer_config_file = os.path.join(working_directory, f"{PREFIX}_baymer_config.yaml")
