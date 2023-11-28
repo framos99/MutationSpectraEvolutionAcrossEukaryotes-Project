@@ -205,7 +205,7 @@ def main(argv):
     # Non-genic bedfile
     non_genic_bedfile = os.path.join(working_directory, f"Files_for_Baymer/{PREFIX}_nonGenic.bed")
     if not os.path.isfile(non_genic_bedfile):
-        making_nongenic_bed_command = ("bedtools subtract -a {whole_genome_bedfile} -b {merged_bedfile} > {non_genic_bedfile}").format(whole_genome_bedfile=whole_genome_bedfile, merged_bedfile=merged_bedfile)
+        making_nongenic_bed_command = ("bedtools subtract -a {whole_genome_bedfile} -b {merged_bedfile} > {non_genic_bedfile}").format(whole_genome_bedfile=whole_genome_bedfile, merged_bedfile=merged_bedfile, non_genic_bedfile=non_genic_bedfile)
         subprocess.run(making_nongenic_bed_command, shell=True, check=True)
 
     # Non-genic FASTA file
