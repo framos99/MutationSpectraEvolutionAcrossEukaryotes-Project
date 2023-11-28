@@ -93,26 +93,28 @@ def calculate_ac_an(input_vcf, output_vcf, ploidy):
         subprocess.run(['sed', '-i', '3i ##INFO=<ID=AN,Number=A,Type=Integer,Description="Total number of alleles in genotypes">', output_vcf])
     subprocess.run(['bgzip', output_vcf])
 
-def check_and_update_ac_an_tags(input_vcf, output_vcf, ploidy):
+def check_and_update_ac_an_tags(input_vcf, output_vcf, ploidy, working_directory):
     # Check if AC and AN tags are already present in the VCF
     with gzip.open(input_vcf, 'rt') as vcf_in:
         for line in vcf_in:
             if line.startswith("##INFO") and "ID=AC" in line and "ID=AN" in line:
                 print("AC and AN tags are already present in the VCF.")
                 return
+        else:
+            temp_dir = os.path.join(working_directory, f"VCFs/temporary_work")
+            os.mkdir(temp_dir)
+            temp_vcf = os.path.join(temp_dir, f"temp.vcf")
+            try:
+                calculate_ac_an(input_vcf, temp_vcf, ploidy)
 
-    # If AC and AN tags are not present, run calculate_ac_an to update them
-    temp_dir = tempfile.mkdtemp()
-    temp_vcf = os.path.join(temp_dir, "temp.vcf")
-
-    try:
-        calculate_ac_an(input_vcf, temp_vcf, ploidy)
-
-        # Move the temporary VCF to the final output location
-        shutil.move(temp_vcf, output_vcf)
-    finally:
-        # Clean up temporary directory
-        shutil.rmtree(temp_dir)
+                # Move the temporary VCF to the final output location
+                final_temp_vcf = os.path.join(f"{temp_vcf}.gz")
+                shutil.move(final_temp_vcf, output_vcf)
+            except Exception as e:
+                print(f"Error: {e}")
+            finally:
+                # Clean up temporary directory
+                shutil.rmtree(temp_dir)
 
 def main(argv):
     try:
@@ -228,13 +230,18 @@ def main(argv):
     # Non-genic VCF file
     non_genic_vcf = os.path.join(working_directory, f"Files_for_Baymer/non.genic_{VCF}")
     vcf_file = os.path.join(working_directory, f"VCFs/{VCF}")
+    vcf_file_index = os.path.join(working_directory, f"VCFs/{VCF}.tbi")
     if not os.path.isfile(non_genic_vcf):
+        #check that vcf index exists
+        if not os.path.isfile(vcf_file_index):
+            generate_vcf_index_command = ("tabix {vcf_file}").format(vcf_file=vcf_file)
+
         generating_nongenic_vcf_command = ("bcftools view -O z -R {non_genic_bedfile} -v snps {vcf_file} | bcftools annotate -O z -x FORMAT,^INFO/AC,^INFO/AF,^INFO/AN - | bcftools norm -O z --multiallelics - --fasta-ref {uncompressed_assembly_file} - | bcftools view -O z -o {non_genic_vcf} -e 'ALT[0]==\"*\" || ALT[0]==\".\"' -").format(non_genic_bedfile=non_genic_bedfile, vcf_file=vcf_file, uncompressed_assembly_file=uncompressed_assembly_file, non_genic_vcf=non_genic_vcf)
         subprocess.run(generating_nongenic_vcf_command, shell=True, check=True)
-        check_and_update_ac_an_tags(non_genic_vcf, non_genic_vcf, PLOIDY)
+        check_and_update_ac_an_tags(input_vcf=non_genic_vcf, output_vcf=non_genic_vcf, ploidy=PLOIDY, working_directory=working_directory)
 
-    if os.path.isfile(uncompressed_assembly_file):
     #remove uncompressed assembly
+    if os.path.isfile(uncompressed_assembly_file):
         os.remove(uncompressed_assembly_file)
 
     # Make baymer config files
