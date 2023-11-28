@@ -237,6 +237,7 @@ def main(argv):
         #check that vcf index exists
         if not os.path.isfile(vcf_file_index):
             generate_vcf_index_command = ("tabix {vcf_file}").format(vcf_file=vcf_file)
+            subprocess.run(generate_vcf_index_command, shell=True, check=True)
 
         generating_nongenic_vcf_command = ("bcftools view -O z -R {non_genic_bedfile} -v snps {vcf_file} | bcftools annotate -O z -x FORMAT,^INFO/AC,^INFO/AF,^INFO/AN - | bcftools norm -O z --multiallelics - --fasta-ref {uncompressed_assembly_file} - | bcftools view -O z -o {non_genic_vcf} -e 'ALT[0]==\"*\" || ALT[0]==\".\"' -").format(non_genic_bedfile=non_genic_bedfile, vcf_file=vcf_file, uncompressed_assembly_file=uncompressed_assembly_file, non_genic_vcf=non_genic_vcf)
         subprocess.run(generating_nongenic_vcf_command, shell=True, check=True)
