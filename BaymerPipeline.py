@@ -116,7 +116,7 @@ def check_and_update_ac_an_tags(input_vcf, output_vcf, ploidy):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "P:A:V:R:F:W:", ['--ploidy'])
+        opts, args = getopt.getopt(sys.argv[1:], "P:A:V:R:F:W:", ['ploidy'])
     except getopt.GetoptError:
         print("Error: Incorrect usage of getopts flags!")
         help()
@@ -144,13 +144,11 @@ def main(argv):
     source_file_for_rmsk_bedfile = os.path.join(working_directory, f"Regions_To_Remove/{RMSK}")
     if not os.path.isfile(rmsk_bedfile):
         if source_file_for_rmsk_bedfile.endswith('.gz'):
-            with gzip.open(source_file_for_rmsk_bedfile, 'rt') as f:
-                rmsk_df = pd.read_csv(f, sep='\t', header=None, skiprows=3, usecols=[5, 6, 7])
+            gzipped_rmsk_bed_generating_command = ("gunzip -c {source_file_for_rmsk_bedfile} | sed '/^$/d' | awk 'BEGIN{{OFS=\"\\t\"}}; {{print $5,$6,$7}}' | grep -v -e 'query' -e 'sequence' > {rmsk_bedfile}").format(source_file_for_rmsk_bedfile=source_file_for_rmsk_bedfile, rmsk_bedfile=rmsk_bedfile)
+            subprocess.run(gzipped_rmsk_bed_generating_command, shell=True, check=True)
         else:
-            rmsk_df = pd.read_csv(source_file_for_rmsk_bedfile, sep='\t', header=None, skiprows=3, usecols=[5, 6, 7])
-
-        # Write the selected columns to a new file
-        rmsk_df.sort_values(by=[0, 1]).to_csv(rmsk_bedfile, sep='\t', index=False, header=False)
+            rmsk_bed_generating_command = ("sed '/^$/d' {source_file_for_rmsk_bedfile} | awk 'BEGIN{{OFS=\"\\t\"}}; {{print $5,$6,$7}}' | grep -v -e 'query' -e 'sequence' > {rmsk_bedfile}").format(source_file_for_rmsk_bedfile=source_file_for_rmsk_bedfile, rmsk_bedfile=rmsk_bedfile)
+            subprocess.run(rmsk_bed_generating_command, shell=True, check=True)
 
     # Coding sequence bedfile
     exons_bedfile = os.path.join(working_directory, f"Regions_To_Remove/{PREFIX}_exons.bed")
@@ -163,18 +161,20 @@ def main(argv):
         else:
             exon_df = pd.read_csv(source_file_for_exon_bedfile, sep='\t', comment='#', header=None)
         # Filter rows based on conditions
-        exon_df = exon_df[(exon_df[2].str.contains("exon")) & (~exon_df.apply(lambda row: any(row.str.contains("pseudogene")), axis=1))]
+        exon_df = exon_df[(exon_df[2].str.contains("exon"))]
+        exon_df = exon_df[(~exon_df[8].str.contains("pseudogene"))]
         #save to exon bedfile
         exon_df[[0,3,4]].sort_values(by=[0, 3]).to_csv(exons_bedfile, sep='\t', index=False, header=False)
 
     # Merge exons and rmsk bedfiles
     merged_bedfile = os.path.join(working_directory, f"Regions_To_Remove/{PREFIX}_exons.and.rmsk.bed")
     if not os.path.isfile(merged_bedfile):
-        repetitive_data = pd.read_csv(rmsk_bedfile, sep='\t')
-        exons_data = pd.read_csv(exons_bedfile, sep='\t')
+        repetitive_data = pd.read_csv(rmsk_bedfile, sep='\t', header=None, names=["chrom", "start", "end"])
+        exons_data = pd.read_csv(exons_bedfile, sep='\t', header=None, names=["chrom", "start", "end"])
 
-        combined_rmsk_exon_df = pd.concat([repetitive_data, exons_data], ignore_index=True)
-        combined_rmsk_exon_df = combined_rmsk_exon_df.sort_values(by=[0, 1])
+        combined_rmsk_exon_df = repetitive_data.append(exons_data, ignore_index=True)
+        #concatenated_df = pd.concat([repetitive_data, exons_data], axis=0, ignore_index=True)
+        combined_rmsk_exon_df = combined_rmsk_exon_df.sort_values(by=['chrom', 'start'])
         #temporary bedfile
         temp_bedfile = os.path.join(working_directory, f"Regions_To_Remove/temp_combined.bed")
         combined_rmsk_exon_df.to_csv(temp_bedfile, sep='\t', header=False, index=False)
