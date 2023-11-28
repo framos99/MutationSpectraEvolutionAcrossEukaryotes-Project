@@ -183,7 +183,7 @@ def main(argv):
         temp_bedfile = os.path.join(working_directory, f"Regions_To_Remove/temp_combined.bed")
         combined_rmsk_exon_df.to_csv(temp_bedfile, sep='\t', header=False, index=False)
         #run bedtools merge
-        merging_command = "bedtools merge -i {bed_to_merge} > {merged_bed}"
+        merging_command = "sort -k1,1V -k2,2n {bed_to_merge} | bedtools merge -i stdin > {merged_bed}"
         command = merging_command.format(bed_to_merge=temp_bedfile, merged_bed=merged_bedfile)
         subprocess.run(command, shell=True, check=True)
 
