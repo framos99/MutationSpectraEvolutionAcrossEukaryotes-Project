@@ -99,7 +99,7 @@ def check_and_update_ac_an_tags(input_vcf, output_vcf, ploidy, working_directory
     # Check if AC and AN tags are already present in the VCF
     with gzip.open(input_vcf, 'rt') as vcf_in:
         for line in vcf_in:
-            if line.startswith("##INFO") and "ID=AC" in line and "ID=AN" in line:
+            if line.startswith("##INFO") and "ID=AC" in line:
                 print("AC and AN tags are already present in the VCF.")
                 return
         else:
