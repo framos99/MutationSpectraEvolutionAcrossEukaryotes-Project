@@ -244,8 +244,8 @@ def main(argv):
         check_and_update_ac_an_tags(input_vcf=non_genic_vcf, output_vcf=non_genic_vcf, ploidy=PLOIDY, working_directory=working_directory)
 
     #remove uncompressed assembly
-    if os.path.isfile(uncompressed_assembly_file):
-        os.remove(uncompressed_assembly_file)
+    #if os.path.isfile(uncompressed_assembly_file):
+    #    os.remove(uncompressed_assembly_file)
 
     # Make baymer config files
     baymer_config_file = os.path.join(working_directory, f"{PREFIX}_baymer_config.yaml")
