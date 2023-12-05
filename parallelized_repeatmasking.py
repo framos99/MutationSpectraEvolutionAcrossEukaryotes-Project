@@ -12,7 +12,7 @@ ARGUMENTS
     -I => <FASTA> Assembly file REQUIRED
     -T => <string> NCBI taxonomic group for repetitive element families REQUIRED
     -W => <string> Working directory path REQUIRED
-    -O_dir => <string> RMSK_output_dir (within working_directory) REQUIRED
+    -O => <string> RMSK_output_dir (within working_directory) REQUIRED
 ASSUMPTIONS
     * RepeatMasker/4.1.5 module is loaded
 """)
@@ -46,12 +46,14 @@ def split_fasta_and_run_repeatmasker(input_fasta, NCBI_TAXONOMY, working_directo
     #list of sequence IDs already processed
     Already_processed_sequences = RMSK_do_not_run_list(working_directory, RMSK_output_directory)
     # RepeatMasker command
-    repeatmasker_command = "bsub RepeatMasker -species {NCBI_TAXONOMY} -e hmmer -libdir /misc/appl/RepeatMasker-4.1.5/Libraries/ -hmmer_dir /misc/appl/hmmer-3.1b2/bin/ {individual_sequence_fasta}"
+    repeatmasker_command = "bsub -o {bsub_out_directory} -e {bsub_out_directory} RepeatMasker -species {NCBI_TAXONOMY} -e hmmer -libdir /misc/appl/RepeatMasker-4.1.5/Libraries/ -hmmer_dir /misc/appl/hmmer-3.1b2/bin/ {individual_sequence_fasta}"
     # File paths
     input_fasta_path = os.path.join(working_directory, f"Assembly/{input_fasta}")
     # Create the output directory if it doesn't exist
     output_directory = os.path.join(working_directory, f"Assembly/{RMSK_output_directory}")
+    bsub_out_directory = os.path.join(working_directory, f"Assembly/bsub_out_err")
     os.makedirs(output_directory, exist_ok=True)
+    os.makedirs(bsub_out_directory, exist_ok=True)
     #Assembly sequence IDs
     sequence_records_file = os.path.join(working_directory, f"Assembly/assembly_sequenceIDs.txt")
 
@@ -70,7 +72,7 @@ def split_fasta_and_run_repeatmasker(input_fasta, NCBI_TAXONOMY, working_directo
                         sequenceID_file.write(f"{record.id}\n")
                     # Run RepeatMasker on the individual FASTA file
                     individual_sequence_fasta = os.path.abspath(output_file)
-                    command = repeatmasker_command.format(NCBI_TAXONOMY=NCBI_TAXONOMY, individual_sequence_fasta=individual_sequence_fasta)
+                    command = repeatmasker_command.format(bsub_out_directory=bsub_out_directory, NCBI_TAXONOMY=NCBI_TAXONOMY, individual_sequence_fasta=individual_sequence_fasta)
                     subprocess.run(command, shell=True, check=True)
     else:
         with open(input_fasta_path, "r") as fasta_file:
@@ -86,7 +88,7 @@ def split_fasta_and_run_repeatmasker(input_fasta, NCBI_TAXONOMY, working_directo
                         sequenceID_file.write(f"{record.id}\n")
                     # Run RepeatMasker on the individual FASTA file
                     individual_sequence_fasta = os.path.abspath(output_file)
-                    command = repeatmasker_command.format(NCBI_TAXONOMY=NCBI_TAXONOMY, individual_sequence_fasta=individual_sequence_fasta)
+                    command = repeatmasker_command.format(bsub_out_directory=bsub_out_directory, NCBI_TAXONOMY=NCBI_TAXONOMY, individual_sequence_fasta=individual_sequence_fasta)
                     subprocess.run(command, shell=True, check=True)
                     
 def RMSK_do_not_run_list(working_directory, RMSK_output_directory):
