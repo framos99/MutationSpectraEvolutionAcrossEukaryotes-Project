@@ -236,9 +236,14 @@ def main(argv):
     if not os.path.isfile(non_genic_vcf):
         #check that vcf index exists
         if not os.path.isfile(vcf_file_index):
-            generate_vcf_index_command = ("tabix {vcf_file}").format(vcf_file=vcf_file)
+            generate_vcf_index_command = ("bcftools index {vcf_file}").format(vcf_file=vcf_file)
             subprocess.run(generate_vcf_index_command, shell=True, check=True)
 
+        temp_dir = os.path.join(working_directory, f"VCFs/temporary_work")
+        os.mkdir(temp_dir)
+        temp_vcf = os.path.join(temp_dir, f"temp.vcf.gz")
+        fixing_vcf_header_command = ("gatk FixVcfHeader -I {vcf_file} -O {temp_vcf}").format(vcf_file=vcf_file, temp_vcf=temp_vcf)
+        
         generating_nongenic_vcf_command = ("bcftools view -O z -R {non_genic_bedfile} -v snps {vcf_file} | bcftools annotate -O z -x FORMAT,^INFO/AC,^INFO/AF,^INFO/AN - | bcftools norm -O z --multiallelics - --fasta-ref {uncompressed_assembly_file} - | bcftools view -O z -o {non_genic_vcf} -v snps -e 'ALT[0]==\"*\" || ALT[0]==\".\"' -").format(non_genic_bedfile=non_genic_bedfile, vcf_file=vcf_file, uncompressed_assembly_file=uncompressed_assembly_file, non_genic_vcf=non_genic_vcf)
         subprocess.run(generating_nongenic_vcf_command, shell=True, check=True)
         check_and_update_ac_an_tags(input_vcf=non_genic_vcf, output_vcf=non_genic_vcf, ploidy=PLOIDY, working_directory=working_directory)
