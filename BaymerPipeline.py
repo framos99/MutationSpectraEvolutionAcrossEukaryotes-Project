@@ -60,18 +60,11 @@ def calculate_ac_an(input_vcf, output_vcf, ploidy):
                     if not "./." in gt_info or ".|." in gt_info:
                         # Split the genotype information on the colon to isolate the GT field
                         gt_field = gt_info.split(":")[0]
-                        # Split the GT field on spaces to handle multiple genotypes in one column
-                        gt_parts = gt_field.split(" ")
-                        for gt_part in gt_parts:
-                            # Split the GT part on '|' or '/' to count alleles
-                            alleles = gt_part.split("|") if "|" in gt_part else gt_part.split("/")
-                            if "1" in alleles:
-                                AC += alleles.count("1")  # Count alternate alleles
-                            if ploidy == "diploid":
-                                AN += 2  # Assuming diploid data
-                            elif ploidy == "haploid":
-                                AN += 1  # Assuming haploid data
-
+                        # Split the GT part on '|' or '/' to count alleles
+                        alleles = gt_field.split("|") if "|" in gt_field else gt_field.split("/")
+                        if "1" in alleles:
+                            AC += alleles.count("1")  # Count alternate alleles
+                        AN += len(alleles)
                 
                 # Update the INFO field with AC and AN
                 if "." in info:
@@ -239,10 +232,10 @@ def main(argv):
             generate_vcf_index_command = ("bcftools index {vcf_file}").format(vcf_file=vcf_file)
             subprocess.run(generate_vcf_index_command, shell=True, check=True)
 
-        temp_dir = os.path.join(working_directory, f"VCFs/temporary_work")
-        os.mkdir(temp_dir)
-        temp_vcf = os.path.join(temp_dir, f"temp.vcf.gz")
-        fixing_vcf_header_command = ("gatk FixVcfHeader -I {vcf_file} -O {temp_vcf}").format(vcf_file=vcf_file, temp_vcf=temp_vcf)
+        #temp_dir = os.path.join(working_directory, f"VCFs/temporary_work")
+        #os.mkdir(temp_dir)
+        #temp_vcf = os.path.join(temp_dir, f"temp.vcf.gz")
+        #fixing_vcf_header_command = ("gatk FixVcfHeader -I {vcf_file} -O {temp_vcf}").format(vcf_file=vcf_file, temp_vcf=temp_vcf)
         
         generating_nongenic_vcf_command = ("bcftools view -O z -R {non_genic_bedfile} -v snps {vcf_file} | bcftools annotate -O z -x FORMAT,^INFO/AC,^INFO/AF,^INFO/AN - | bcftools norm -O z --multiallelics - --fasta-ref {uncompressed_assembly_file} - | bcftools view -O z -o {non_genic_vcf} -v snps -e 'ALT[0]==\"*\" || ALT[0]==\".\"' -").format(non_genic_bedfile=non_genic_bedfile, vcf_file=vcf_file, uncompressed_assembly_file=uncompressed_assembly_file, non_genic_vcf=non_genic_vcf)
         subprocess.run(generating_nongenic_vcf_command, shell=True, check=True)
