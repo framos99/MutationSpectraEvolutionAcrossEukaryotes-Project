@@ -200,7 +200,7 @@ def main(argv):
 
     generating_nongenic_vcf_command = ("bcftools view -O z -R {non_genic_bedfile} -v snps {vcf_file} | bcftools annotate -O z -x FORMAT,^INFO/AC,^INFO/AF,^INFO/AN - | bcftools norm -O z --multiallelics - --fasta-ref {uncompressed_assembly_file} - | bcftools view -O z -o {non_genic_vcf} -v snps -e 'ALT[0]==\"*\" || ALT[0]==\".\"' -").format(non_genic_bedfile=non_genic_bedfile, vcf_file=vcf_file, uncompressed_assembly_file=uncompressed_assembly_file, non_genic_vcf=non_genic_vcf)
 
-    compress_assembly_command = ("gzip {uncompressed_assembly_file}").format(uncompressed_assembly_file=uncompressed_assembly_file)
+    compress_assembly_command = ("bgzip {uncompressed_assembly_file}").format(uncompressed_assembly_file=uncompressed_assembly_file)
 
     dustmasker_command = ("dustmasker -in {uncompressed_assembly_file} -window 32 -outfmt acclist | sed 's/>//g' | awk 'BEGIN{{OFS=\"\t\"}}; {{print $1,$(NF-1),$NF}}' > {callability_mask}").format(uncompressed_assembly_file=uncompressed_assembly_file, callability_mask=callability_mask)
 
