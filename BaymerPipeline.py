@@ -239,8 +239,8 @@ def main(argv):
         exons_data = pd.read_csv(exons_bedfile, sep='\t', header=None, names=["chrom", "start", "end"])
         lowcomplx_data = pd.read_csv(callability_mask, sep='\t', header=None, names=["chrom", "start", "end"])
 
-        combined_rmsk_exon_lowcomplx_df = repetitive_data.append(exons_data, ignore_index=True)
-        combined_rmsk_exon_lowcomplx_df = combined_rmsk_exon_lowcomplx_df.append(lowcomplx_data, ignore_index=True)
+        combined_rmsk_exon_lowcomplx_df = pd.concat([repetitive_data,exons_data], ignore_index=True)
+        combined_rmsk_exon_lowcomplx_df = pd.concat([combined_rmsk_exon_lowcomplx_df,lowcomplx_data], ignore_index=True)
         #concatenated_df = pd.concat([repetitive_data, exons_data], axis=0, ignore_index=True)
         combined_rmsk_exon_lowcomplx_df = combined_rmsk_exon_lowcomplx_df.sort_values(by=['chrom', 'start'])
 
