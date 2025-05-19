@@ -5,4 +5,4 @@ This repository contains all code for generating and analyzing context-specific 
 - Template scripts for applying Baymer to mutation and context counts data.
 - Utility scripts for data processing and format conversion (`UtilityScripts/`).
 - Phylogenetic tree (in newick format) of final set of species analyzed; generated from TimeTree.org (`MutationEvolution_108Species.nwk`).
-- R Markdown file with code for generating every figure in the article (`UtilityScripts/`).
+- R Markdown file with code for generating every figure in the article (`MutationSpectraEvolutionInEukaryotesPaperFigures.Rmd`).
