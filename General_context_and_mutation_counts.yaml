@@ -1,0 +1,16 @@
+---
+ancestral:
+  False
+genome_build:
+  SPECIES_NAME
+SPECIES_NAME:
+  vcf_files:
+    all_chr: /project/voight_subrate2/fabramos/100_Species/SPECIES_NAME/Files_for_Baymer/FINAL_VCF
+features:
+  non_genic:
+    bed: /project/voight_subrate2/fabramos/100_Species/SPECIES_NAME/Files_for_Baymer/NON_GENIC_BED
+    fastas:
+      all_chr: /project/voight_subrate2/fabramos/100_Species/SPECIES_NAME/Files_for_Baymer/NON_GENIC_FASTA
+chromosomes:
+  - "all_chr"
+...

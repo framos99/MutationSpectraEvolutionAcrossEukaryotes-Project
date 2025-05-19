@@ -1,0 +1,18 @@
+---
+base_output_location: /home/fabramos/BaymerOuts
+feature: non_genic
+species: SPECIES_NAME
+count_generation_config: /project/voight_subrate2/fabramos/100_Species/SPECIES_NAME/SPECIES_NAME_context_and_mutation_counts.yaml
+context_count_tsv: /project/voight_subrate2/fabramos/100_Species/SPECIES_NAME/Baymer_Out/context_counts.tsv
+mutation_count_tsv: /project/voight_subrate2/fabramos/100_Species/SPECIES_NAME/Baymer_Out/mutation_counts.tsv
+conditions:
+  min_ac_2:
+    datasets:
+      - ALL
+      - ODD
+      - EVEN
+    filters:
+      max_AF: 0.999
+      min_AC: 2
+      min_quality: None
+...
